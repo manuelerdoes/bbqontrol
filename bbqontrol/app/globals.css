@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 220, 221, 223;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.controllerCard {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  width: 40%;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+.controllerCard h3 {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.controllerDetailCard h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.controllerDetailCard {
+  font-size: 1rem;
+  font-weight: 370;
+  margin: 0;
+}
+
+.navigation {
+  background-color: burlywood;
+  margin-bottom: 1.3rem;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding: 0 auto;
+}
+
+.navigation a {
+  margin-right: 1rem;
+  background-color: chocolate;
+  padding-left: 0.2rem;
+  padding-right: 0.2rem;
+  margin-top: 0px;
+  margin-bottom: 0;
+  height: 100%;
+}
+
+.controllerOverview {
+  margin: 10px;
+  padding: 10px;
+}
+
+.controllerOverview h2 {
+  font-size: 2rem;
+
+}

@@ -1,0 +1,18 @@
+{
+  "controllers": [
+    {
+      "id": "1",
+      "name": "manjubono",
+      "temp": "0",
+      "fanspeed": "0",
+      "targettemp": "0"
+    },
+    {
+      "id": "2",
+      "name": "dubsismoko",
+      "temp": "0",
+      "fanspeed": "0",
+      "targettemp": "0"
+    }
+  ]
+}
