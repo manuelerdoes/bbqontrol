@@ -2,6 +2,7 @@
 #include "max6675.h"
 #include <LiquidCrystal_I2C.h>
 #include <ESP_Knob.h>
+#include <WiFi.h>
 
 // Motor A
 int motor1Pin1 = 27; 
@@ -20,7 +21,7 @@ int thermoDO = 5;
 int thermoCS = 18;
 int thermoCLK = 19;
 
-float targetTemp = 22.0;
+float targetTemp = 45.0;
 float currentTemp = 30.0;
 float minTarget = 45.0;
 float maxTarget = 300.0;
@@ -44,20 +45,35 @@ void onKnobLeftEventCallback(int count, void *usr_data)
 {
     if (targetTemp > minTarget) 
     {
-      targetTemp -= 1.0;
+      targetTemp -= 0.5;
     }
+    // delay(50);
 }
 
 void onKnobRightEventCallback(int count, void *usr_data)
 {
     if (targetTemp < maxTarget)
     {
-      targetTemp += 1.0;
+      targetTemp += 0.5;
     }
+    // delay(50);
 }
 
-int counter = 0;
+// WiFi
+// const char* ssid = "BabaWaves69";
+// const char* password = "NurFuerBaba5";
+const char* ssid = "manuel";
+const char* password = "asdf1234";
+
+// utils
+
+int loopCounter = 0;
+int fanRunningCounter = 0;
 float difference = 0.0;
+float lastTemp = 0.0;
+int isSinkingCounter = 0;
+float olderTemp = 0.0;
+float tempDiff = 0.0;
 
 
 void setup() {
@@ -80,10 +96,6 @@ void setup() {
 
   Serial.begin(9600);
 
-  // testing
-  Serial.print("Testing DC Motor...");
-  Serial.println("MAX6675 test");
-
   // wait for MAX chip to stabilize
   delay(500);
 
@@ -93,20 +105,61 @@ void setup() {
   knob->attachLeftEventCallback(onKnobLeftEventCallback);
   knob->attachRightEventCallback(onKnobRightEventCallback);
 
+  // wifi setup
+    // WiFi.mode(WIFI_STA); //Optional
+    // WiFi.begin(ssid, password);
+    // Serial.println("\nConnecting");
+
+    // while(WiFi.status() != WL_CONNECTED){
+    //     Serial.println("status: " + String(WiFi.status()));
+    //     delay(1000);
+    // }
+
+    // Serial.println("\nConnected to the WiFi network");
+    // Serial.print("Local ESP32 IP: ");
+    // Serial.println(WiFi.localIP());
+
     
 }
 
 void loop() {
 
-if (counter % 5 == 0) {
+if (loopCounter % 5 == 0) {
+  if (loopCounter >= 100000) {
+    loopCounter = 0;
+  }
 
-  Serial.print("C = "); 
-  Serial.println(thermocouple.readCelsius());
-  Serial.print("F = ");
-  Serial.println(thermocouple.readFahrenheit());
+  lastTemp = currentTemp;
   currentTemp = thermocouple.readCelsius();
+
+  if (currentTemp >= targetTemp) {
+    dutyCycle = 0;
+    fanRunningCounter = 0;
+  } else {
+    fanRunningCounter++;
+    if (fanRunningCounter < 5) { // wait some time before turning on fan
+      return;
+    }
+
+    difference = targetTemp - currentTemp;
+    if (difference > 100) {
+      difference = 100;
+    }
+    dutyCycle = ((difference - 1) / 99) * 110 /* MAX */ + 30 /* MIN */;
+
+    if (fanRunningCounter % 10 == 0) { 
+      tempDiff = olderTemp - currentTemp;
+      if (tempDiff > 0.5) {
+        // temp is sinking -> increase fan speed
+        int increase = ((tempDiff - 0.5) / 4.5) * 50 + 10;
+        dutyCycle += increase;
+      } 
+      olderTemp = currentTemp;
+    }
+  }
+
   // For the MAX6675 to update, you must delay AT LEAST 250ms between reads!
-  delay(250);
+  delay(300);
 }
 
   lcd.setCursor(0,0);
@@ -121,21 +174,18 @@ if (counter % 5 == 0) {
   digitalWrite(motor1Pin2, LOW);
 
 
-  if (currentTemp >= targetTemp) {
-    dutyCycle = 0;
-  // } else if (targetTemp - currentTemp < 5) {
-  //   dutyCycle = 60;
-  // } else if (targetTemp - currentTemp < 10) {
-  //   dutyCycle = 120;
-  } else {
-    difference = targetTemp - currentTemp;
-    if (difference > 100) {
-      difference = 100;
-    }
-    dutyCycle = ((difference - 1) / 99) * 225 + 30;
-  }
+
 
   ledcWrite(pwmChannel, dutyCycle);
-  counter++;
-  delay(100);
+  loopCounter++;
+  delay(200);
+}
+
+bool tempIsSinking() {
+  if (currentTemp < lastTemp) {
+    isSinkingCounter++;
+    return true;
+  }
+  isSinkingCounter = 0;
+  return false;
 }

@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "bbqontrol_esp",
+			"path": "esp_controller/bbqontrol_esp"
+		}
+	],
+  "settings": {
+    "cortex-debug.variableUseNaturalFormat": false
+  }
+}
